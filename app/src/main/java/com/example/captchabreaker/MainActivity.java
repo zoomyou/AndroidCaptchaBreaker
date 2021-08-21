@@ -10,9 +10,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.handshake.ServerHandshake;
+
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -23,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isOpen = false;
     private boolean isWorking = false;
     private String imageType = "0";
+    final String WS_URL = "ws://www.captchabreakerog.ltd:80/socket/mini";
+
+    private WebSocketClient webSocketClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,11 +40,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openOrClose(View view){
+
+        URI uri = URI.create(WS_URL);
+
         // 开启 webSocket 开始接收任务
         if (!isOpen()){
             // TODO 开启任务接收
+            webSocketClient = new WebSocketClient(uri) {
+                @Override
+                public void onOpen(ServerHandshake handshakedata) {
+                    Toast.makeText(MainActivity.this, "connection open", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onMessage(String message) {
+                    Toast.makeText(MainActivity.this, "receive message:"+message, Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onClose(int code, String reason, boolean remote) {
+                    Toast.makeText(MainActivity.this, "connection close", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onError(Exception ex) {
+                    Toast.makeText(MainActivity.this, "connection error", Toast.LENGTH_LONG).show();
+                }
+            };
         } else {
             // TODO 关闭任务接收
+            webSocketClient.close();
         }
     }
 
