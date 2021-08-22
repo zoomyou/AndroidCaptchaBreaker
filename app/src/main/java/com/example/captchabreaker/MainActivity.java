@@ -25,6 +25,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
+
     public static boolean isOpen = false;
     public static boolean isWorking = false;
     public static String imageType = "0";
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openOrClose(View view){
+
+        URI uri = URI.create(WS_URL);
 
         // 开启 webSocket 开始接收任务
         if (!isOpen){
@@ -78,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             };
             // TODO 开启任务接收
+
             try {
                 webSocketClient.connect();
             } catch (Exception e) {
