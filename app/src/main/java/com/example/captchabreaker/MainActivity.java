@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
@@ -24,10 +25,10 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 
-    private boolean isOpen = false;
-    private boolean isWorking = false;
-    private String imageType = "0";
-    final String WS_URL = "ws://www.captchabreakerog.ltd:80/socket/mini";
+    public static boolean isOpen = false;
+    public static boolean isWorking = false;
+    public static String imageType = "0";
+    final String WS_URL = "ws://121.5.113.98:80/socket/mini";
 
     private WebSocketClient webSocketClient;
 
@@ -41,35 +42,51 @@ public class MainActivity extends AppCompatActivity {
 
     public void openOrClose(View view){
 
-        URI uri = URI.create(WS_URL);
-
         // 开启 webSocket 开始接收任务
-        if (!isOpen()){
-            // TODO 开启任务接收
+        if (!isOpen){
+            URI uri = URI.create(WS_URL);
+
             webSocketClient = new WebSocketClient(uri) {
                 @Override
                 public void onOpen(ServerHandshake handshakedata) {
+                    Looper.prepare();
                     Toast.makeText(MainActivity.this, "connection open", Toast.LENGTH_LONG).show();
+                    Looper.loop();
+                    MainActivity.isOpen = true;
                 }
 
                 @Override
                 public void onMessage(String message) {
+                    Looper.prepare();
                     Toast.makeText(MainActivity.this, "receive message:"+message, Toast.LENGTH_LONG).show();
+                    Looper.loop();
                 }
 
                 @Override
                 public void onClose(int code, String reason, boolean remote) {
+                    Looper.prepare();
                     Toast.makeText(MainActivity.this, "connection close", Toast.LENGTH_LONG).show();
+                    Looper.loop();
+                    MainActivity.isOpen = false;
                 }
 
                 @Override
                 public void onError(Exception ex) {
-                    Toast.makeText(MainActivity.this, "connection error", Toast.LENGTH_LONG).show();
+//                Toast.makeText(MainActivity.this, "connection error", Toast.LENGTH_LONG).show();
+                    System.out.println("error:"+ex.getMessage());
+                    MainActivity.isOpen = false;
                 }
             };
+            // TODO 开启任务接收
+            try {
+                webSocketClient.connect();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         } else {
             // TODO 关闭任务接收
             webSocketClient.close();
+            webSocketClient = null;
         }
     }
 
